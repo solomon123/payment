@@ -1,0 +1,140 @@
+<?php
+/**
+* @payment module 
+*/
+
+/**
+* Implements hook_mepermission
+*/
+
+
+function payment_permission() {
+  return array(
+    'administer credit card payment' => array(
+      'title' => t('Administer credit card payment'),
+      'description' => t('Perform administration tasks for credit card payment.'),
+    ),
+  );
+}
+
+
+
+
+/**
+*   Implements hook_menu
+*/
+
+
+function payment_menu() {
+  $items['online-payment'] = array(
+    'title' => 'Payment Page',
+    'page callback' => 'online_payment',
+    'access arguments' => array('administer credit card payment'),
+    'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('online_payment_form'),
+  );
+
+  return $items;
+}
+
+
+/**
+*   Implements online payment form function.
+*/
+
+function online_payment_form($form, &$form_state){
+	
+	$form['nameoncard'] = array(
+	  '#type' => 'textfield', 
+	  '#title' => t('Name on card'), 
+	  '#size' => 60, 
+	  '#maxlength' => 128, 
+	  '#required' => TRUE,
+	);
+
+	$form['cardnumber'] = array(
+	  '#type' => 'textfield', 
+	  '#title' => t('Card Number'), 
+	  '#size' => 16, 
+	  '#maxlength' => 16, 
+	  '#required' => TRUE,
+	);
+
+	$form['expirationdate'] = array(
+	  '#type' => 'textfield', 
+	  '#title' => t('Card Expiration Date'), 
+	  '#size' => 5, 
+	  '#maxlength' => 5, 
+	  '#required' => TRUE,
+	);
+
+	$form['cvv'] = array(
+	  '#type' => 'textfield', 
+	  '#title' => t('Card CVV number'), 
+	  '#size' => 3, 
+	  '#maxlength' => 3, 
+	  '#required' => TRUE,
+	);
+
+	$form['submit'] = array(
+	   '#type' => 'submit', 
+ 	   '#value' => t('Submit payment')
+	);
+
+return $form;
+}
+
+/**
+*  Implement a validation handler
+*/
+
+function online_payment_form_validate($form, &$form_state){
+
+	if(!is_numeric($form_state['values']['cvv']) || !is_numeric($form_state['values']['cardnumber'])){
+		if(!is_numeric($form_state['values']['cvv']))
+		 form_set_error('cvv',t('Enter a vaild cvv!'));
+		if(!is_numeric($form_state['values']['cardnumber']))
+		form_set_error('cardnumber',t('Enter a card number!'));
+		return false;
+	}
+return true;
+}
+
+/**
+* Implement submit handler
+*/
+
+
+function online_payment_form_submit($form, &$form_state){
+
+$pid = db_insert('payment')
+->fields(array(
+  'nameoncard' => $form_state['values']['nameoncard'],
+  'cardnumber' => $form_state['values']['cardnumber'],
+  'expirationdate' => $form_state['values']['expirationdate'],
+  'cvvdate' => $form_state['values']['cvvdate'],
+))
+->execute();
+drupal_set_message(t('Your payment is on process'));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
